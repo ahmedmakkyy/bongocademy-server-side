@@ -202,14 +202,26 @@ async function run() {
       try {
         const result = await classCollection
           .aggregate([
-            { $group: { _id: '$instructor_email', instructor_name: { $first: '$instructor_name' }, instructor_photo: { $first: '$instructor_photo' }, totalStudents: { $sum: '$enrolled' } } },
+            {
+              $group: {
+                _id: '$instructor_email',
+                instructor_name: { $first: '$instructor_name' },
+                instructor_photo: { $first: '$instructor_photo' },
+                totalStudents: { $sum: '$enrolled' }
+              }
+            },
             { $sort: { instructor_name: 1 } },
             { $limit: 12 }
           ])
           .toArray();
     
         if (result.length > 0) {
-          const instructors = result.map(item => ({ instructor_name: item.instructor_name, instructor_photo: item.instructor_photo, totalStudents: item.totalStudents }));
+          const instructors = result.map(item => ({
+            instructor_name: item.instructor_name,
+            instructor_email: item._id, // Add instructor_email field
+            instructor_photo: item.instructor_photo,
+            totalStudents: item.totalStudents
+          }));
           res.json(instructors);
         } else {
           res.json('No instructors found');
@@ -219,6 +231,7 @@ async function run() {
         res.status(500).send('Failed to get the popular instructors');
       }
     });
+    
     
    
 
